@@ -1,0 +1,27 @@
+name: Daily hospital refresh & deploy
+on:
+  schedule: [{cron: "30 20 * * *"}]   # 02:00 IST every day
+  workflow_dispatch:
+permissions: {contents: read, pages: write, id-token: write}
+concurrency: {group: pages, cancel-in-progress: true}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch all-India hospital data (free Overpass API)
+        run: |
+          mkdir -p site
+          cp index.html robots.txt site/
+          python3 fetch_hospitals.py --out site/data
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: {path: site}
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: {name: github-pages, url: "${{ steps.d.outputs.page_url }}"}
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4
