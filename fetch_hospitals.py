@@ -6,13 +6,18 @@ free Overpass API (no key) and writes:
     data/index.json        list of states, counts, timestamps
     data/<STATE>.dat       compressed, scrambled hospital records for that state
 
+First run fetches everything. Every later run COMPARES new data with the saved
+data and only replaces a state's file when something really changed. The old
+file is copied to data/backup/ first. If a fetch fails, returns nothing, or
+returns far fewer hospitals than before, the saved data is kept untouched.
+
 Run:      python3 fetch_hospitals.py            (all states)
           python3 fetch_hospitals.py TG KA      (only some states)
           python3 fetch_hospitals.py --out site/data
 Daily:    use the included GitHub Actions workflow, or cron:
           0 2 * * * cd /path/to/folder && python3 fetch_hospitals.py
 """
-import json, os, re, sys, time, urllib.parse, urllib.request, zlib
+import hashlib, json, os, re, shutil, sys, time, urllib.parse, urllib.request, zlib
 from datetime import datetime, timezone
 
 ENDPOINTS = [
@@ -56,14 +61,14 @@ foreach.dists->.d(
   out ids;
 );"""
 
-def overpass(query, tries=3):
+def overpass(query, tries=3, timeout=420, endpoints=None):
     body = urllib.parse.urlencode({"data": query}).encode()
     last = None
     for _ in range(tries):
-        for url in ENDPOINTS:
+        for url in (endpoints or ENDPOINTS):
             try:
                 req = urllib.request.Request(url, data=body, headers={"User-Agent": "uddgam-hospital-directory/2.0"})
-                with urllib.request.urlopen(req, timeout=420) as r:
+                with urllib.request.urlopen(req, timeout=timeout) as r:
                     return json.load(r)
             except Exception as e:
                 last = e
@@ -119,68 +124,136 @@ KEY = b"uddgam-hospitals"   # must match readDat() in index.html
 def scramble(b):
     return bytes(c ^ KEY[i % len(KEY)] for i, c in enumerate(b))
 
-def fetch_state(code, iso):
+DIST_FAILS = 0   # stop trying district lookups if the servers keep refusing them
+
+def fetch_state(code, iso, prev=None):
+    global DIST_FAILS
+    prev = prev or {}
     data = overpass(flat_query(iso))
     els = data.get("elements", [])
-    # best-effort: tag every hospital with its district (admin_level 5, else 6)
     id_to_dist = {}
-    for level in (5, 6):
-        try:
-            cur, found = "", 0
-            for el in overpass(district_query(iso, level)).get("elements", []):
-                tg = el.get("tags") or {}
-                if tg.get("boundary") == "administrative":
-                    cur, found = (tg.get("name:en") or tg.get("name") or "").replace(" District", "").strip(), found + 1
-                elif cur:
-                    id_to_dist.setdefault(el["type"][0] + str(el["id"]), cur)
-            if found:
+    if DIST_FAILS < 3:   # best-effort: tag every hospital with its district (admin_level 5, else 6)
+        for level in (5, 6):
+            try:
+                cur, found = "", 0
+                for el in overpass(district_query(iso, level), tries=1, timeout=200).get("elements", []):
+                    tg = el.get("tags") or {}
+                    if tg.get("boundary") == "administrative":
+                        cur, found = (tg.get("name:en") or tg.get("name") or "").replace(" District", "").strip(), found + 1
+                    elif cur:
+                        id_to_dist.setdefault(el["type"][0] + str(el["id"]), cur)
+                DIST_FAILS = 0
+                if found:
+                    break
+            except Exception as e:
+                DIST_FAILS += 1
+                print(f"   district lookup (level {level}) skipped: {e}", file=sys.stderr)
                 break
-        except Exception as e:
-            print(f"   district lookup (level {level}) skipped: {e}", file=sys.stderr)
     seen, out = set(), []
     for el in els:
-        rec = normalize(el, code, id_to_dist.get(el["type"][0] + str(el["id"]), ""))
+        hid = el["type"][0] + str(el["id"])
+        # if today's district lookup gave nothing, keep the district we already had
+        rec = normalize(el, code, id_to_dist.get(hid) or prev.get(hid, ""))
         if rec and rec["id"] not in seen:
             seen.add(rec["id"]); out.append(rec)
-    out.sort(key=lambda r: r["name"].lower())
+    out.sort(key=lambda r: (r["name"].lower(), r["id"]))
     return out
 
+# ---------- storage helpers ----------
+KEY = b"uddgam-hospitals"   # must match readDat() in index.html
+def scramble(b):
+    return bytes(c ^ KEY[i % len(KEY)] for i, c in enumerate(b))
+
+def read_dat(path):
+    try:
+        with open(path, "rb") as f:
+            return json.loads(zlib.decompress(scramble(f.read())).decode("utf-8"))
+    except Exception:
+        return None
+
+def write_dat(path, obj):
+    raw = json.dumps(obj, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    tmp = path + ".tmp"
+    with open(tmp, "wb") as f:
+        f.write(scramble(zlib.compress(raw, 9)))
+    os.replace(tmp, path)          # atomic: a crash can never leave a half-written file
+
+def digest(recs):
+    return hashlib.sha256(json.dumps(recs, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
+
+def diff(old, new):
+    o = {r["id"]: r for r in old}; n = {r["id"]: r for r in new}
+    return {"added": len(n.keys() - o.keys()), "removed": len(o.keys() - n.keys()),
+            "modified": sum(1 for k in n.keys() & o.keys() if n[k] != o[k])}
+
+def now():
+    return datetime.now(timezone.utc).isoformat()
+
+def write_index(outdir, states):
+    ats = [s["at"] for s in states if s.get("at")]
+    idx = {"fetched_at": max(ats) if ats else now(), "checked_at": now(),
+           "total": sum(s["count"] for s in states), "states": states}
+    tmp = os.path.join(outdir, "index.json.tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(idx, f, ensure_ascii=False, separators=(",", ":"))
+    os.replace(tmp, os.path.join(outdir, "index.json"))
+    return idx
+
 def main(argv):
-    outdir = "data"
+    outdir, force = "data", False
     if "--out" in argv:
         i = argv.index("--out"); outdir = argv[i + 1]; del argv[i:i + 2]
+    if "--force" in argv:
+        argv.remove("--force"); force = True
     only = {a.upper() for a in argv}
-    os.makedirs(outdir, exist_ok=True)
+    os.makedirs(os.path.join(outdir, "backup"), exist_ok=True)
     idx_path = os.path.join(outdir, "index.json")
     old = {}
-    if os.path.exists(idx_path):
-        try: old = {s["code"]: s for s in json.load(open(idx_path))["states"]}
-        except Exception: pass
-    states, ok = [], 0
+    try: old = {s["code"]: s for s in json.load(open(idx_path))["states"]}
+    except Exception: pass
+
+    states, report = [], []
     for code, name, iso in STATES:
+        path = os.path.join(outdir, f"{code}.dat")
+        prev = old.get(code, {"code": code, "name": name, "count": 0, "at": "", "status": "pending"})
+        old_obj = read_dat(path)
+        old_recs = (old_obj or {}).get("hospitals", [])
+        if not os.path.exists(path): prev = {**prev, "count": 0, "at": ""}
         if only and code not in only:
-            if code in old: states.append(old[code])
-            continue
+            states.append(prev); continue
         print(f"[{code}] {name} ...", flush=True)
+        entry = dict(prev, code=code, name=name, checked=now())
         try:
-            recs = fetch_state(code, iso)
-            if not recs: raise RuntimeError("no hospitals returned")
-            at = datetime.now(timezone.utc).isoformat()
-            raw = json.dumps({"code": code, "name": name, "at": at, "hospitals": recs}, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-            with open(os.path.join(outdir, f"{code}.dat"), "wb") as f:   # compressed + scrambled: no plain-JSON dump
-                f.write(scramble(zlib.compress(raw, 9)))
-            states.append({"code": code, "name": name, "count": len(recs), "at": at}); ok += 1
-            print(f"   {len(recs)} hospitals")
+            recs = fetch_state(code, iso, {r["id"]: r.get("dist", "") for r in old_recs})
+            if not recs:
+                raise RuntimeError("server returned no hospitals")
+            if old_recs and len(recs) < 0.6 * len(old_recs) and not force:
+                raise RuntimeError(f"suspicious drop {len(old_recs)} -> {len(recs)}; kept saved data")
+            if old_recs and digest(recs) == digest(old_recs):
+                entry.update(status="unchanged"); entry.pop("error", None); entry.pop("changes", None)
+                msg = f"unchanged ({len(recs)})"
+            else:
+                ch = diff(old_recs, recs) if old_recs else {"added": len(recs), "removed": 0, "modified": 0}
+                if old_obj and os.path.exists(path):
+                    shutil.copy2(path, os.path.join(outdir, "backup", f"{code}.dat"))   # keep previous version
+                at = now()
+                write_dat(path, {"code": code, "name": name, "at": at, "hospitals": recs})
+                entry.update(count=len(recs), at=at, status="updated" if old_recs else "new", changes=ch); entry.pop("error", None)
+                msg = f"{entry['status']} ({len(recs)}; +{ch['added']} -{ch['removed']} ~{ch['modified']})"
         except Exception as e:
-            print(f"   FAILED: {e}", file=sys.stderr)
-            states.append(old.get(code, {"code": code, "name": name, "count": 0, "at": ""}))
+            entry.update(status="failed" if not old_recs else "stale", error=str(e)[:160])
+            msg = f"{entry['status']}: {e}"
+            print(f"   {msg}", file=sys.stderr)
+        print(f"   {msg}")
+        report.append(f"| {code} | {name} | {msg} |")
+        states.append(entry)
+        write_index(outdir, states + [old.get(c, {"code": c, "name": n, "count": 0, "at": ""}) for c, n, _ in STATES[len(states):]])  # save progress after every state
         time.sleep(6)   # be polite to the free servers
-    idx = {"fetched_at": datetime.now(timezone.utc).isoformat(),
-           "total": sum(s["count"] for s in states), "states": states}
-    with open(idx_path, "w", encoding="utf-8") as f:
-        json.dump(idx, f, ensure_ascii=False, separators=(",", ":"))
-    print(f"Done: {ok} states updated, {idx['total']} hospitals total.")
-    return 0 if ok else 1
+    idx = write_index(outdir, states)
+    with open(os.path.join(outdir, "run_report.md"), "w", encoding="utf-8") as f:
+        f.write(f"### Hospital data run {idx['checked_at']}\n\n| Code | State | Result |\n|---|---|---|\n" + "\n".join(report) + f"\n\n**Total hospitals served: {idx['total']}**\n")
+    print(f"Done. {idx['total']} hospitals served.")
+    return 0 if idx["total"] > 0 else 1
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))

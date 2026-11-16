@@ -38,6 +38,7 @@ button,input,select{font:inherit;color:inherit}
 
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:-52px}
 .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow)}
+.stats:empty{display:none}.errbox:not([hidden])+.stats{margin-top:0}
 .stat b{display:block;font-size:24px;letter-spacing:-.5px}.stat span{color:var(--mut);font-size:12px}
 
 .controls{margin:16px 0 8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:var(--shadow);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -92,7 +93,7 @@ select:focus,input:focus{border-color:var(--pri);outline:none;box-shadow:0 0 0 3
 .card,.tile,.stat,.loc,.te{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 input,select{-webkit-user-select:text;user-select:text}
 .cp{cursor:pointer;background:var(--soft)!important;color:var(--pri)!important;border:1px solid var(--pri)!important;padding:7px 11px;border-radius:9px;font-size:12.5px;font-weight:500}
-.errbox{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:16px 0 0;padding:16px 18px;border-radius:14px;border:1px solid #fecaca;background:var(--redsoft);color:#991b1b;box-shadow:var(--shadow)}
+.errbox{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:-52px 0 16px;position:relative;z-index:2;padding:16px 18px;border-radius:14px;border:1px solid #fecaca;background:var(--redsoft);color:#991b1b;box-shadow:var(--shadow)}
 .errbox[hidden]{display:none}.errbox b{display:block;font-size:15px;margin-bottom:2px}.errbox small{opacity:.8}
 .errbox.warn{border-color:#fde68a;background:var(--ambersoft);color:var(--amber)}
 [data-theme=dark] .errbox{color:#fecaca}[data-theme=dark] .errbox.warn{color:#fde68a}
@@ -279,7 +280,7 @@ function relevance(h,C){ let s=0; const n=h.name.toLowerCase(); for(const w of C
 /* ============ State ============ */
 let INDEX=null, STATES=[], LOADED={}, ALL=[], PLACES=[], VOCAB=new Map(), VIEW=[], shown=0;
 let M={state:"",district:"",kind:"",spec:"",beds:0,score:0,er:false,h24:false,phone:false,web:false,email:false,wheel:false,hasBeds:false};
-let me=null, token=0, lastP=null, partial=0;
+let me=null, token=0, lastP=null, partial=0, usedCache=0, staleIdx=false;
 
 function decorate(h,code,name){
   h.state=code; h.stateName=name; h.dist=h.dist||"";
@@ -308,15 +309,15 @@ async function ensure(codes){
   const queue=[...need];
   await Promise.all(Array.from({length:Math.min(6,queue.length)},async()=>{
     while(queue.length){
-      const code=queue.shift(), meta=STATES.find(s=>s.code===code);
+      const code=queue.shift(), meta=STATES.find(s=>s.code===code); let c=null, fromCache=false;
       try{
-        let c=await DB.get("s:"+code);
+        c=await DB.get("s:"+code);
         if(!c||c.at!==meta.at){
           const r=await fetchT(`data/${code}.dat`);
-          const j=await readDat(await r.arrayBuffer()); c={at:meta.at,list:j.hospitals}; await DB.set("s:"+code,c);
+          const j=await readDat(await r.arrayBuffer()); c={at:meta.at,list:j.hospitals}; await DB.set("s:"+code,c); fromCache=false;
         }
-        LOADED[code]=c.list.map(h=>decorate(h,code,meta.name));
-      }catch(e){console.warn(code,e)}
+      }catch(e){console.warn(code,e); if(c) fromCache=true}
+      if(c){ LOADED[code]=c.list.map(h=>decorate(h,code,meta.name)); if(fromCache) usedCache++; }
       done++; step();
     }
   }));
@@ -379,7 +380,9 @@ async function runInner(updateUrl=true){
   else if(s==="name") VIEW.sort((a,b)=>a.name.localeCompare(b.name));
   else {VIEW.forEach(h=>h.r=relevance(h,C));VIEW.sort((a,b)=>b.r-a.r||a.name.localeCompare(b.name))}
   $("landing").innerHTML=""; shown=0; $("grid").innerHTML=""; renderUnderstood(P,C); renderMore(C);
-  if(partial) showError("warn","Some data couldn't be loaded",`${partial} state(s) failed to load, so results may be incomplete. Please try again after some time.`); else hideError();
+  if(partial) showError("warn","Some data couldn't be loaded",`${partial} state(s) failed to load, so results may be incomplete. Please try again after some time.`);
+  else if(staleIdx||usedCache) showError("warn","Showing saved data","We couldn't check for the latest update right now. Please try again after some time.");
+  else hideError();
   if(updateUrl) syncUrl();
 }
 const hav=(a,b,c,d)=>{const r=x=>x*Math.PI/180,dl=r(c-a),dn=r(d-b),h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2;return 12742*Math.asin(Math.sqrt(h))};
@@ -389,7 +392,7 @@ function status(msg,busy,bad){$("status").innerHTML=`<span class="dot ${busy||ba
 function statusLine(){
   if(!INDEX) return;
   const f=d=>new Date(d).toLocaleString([], {dateStyle:"medium",timeStyle:"short"});
-  $("status").innerHTML=`<span class="dot"></span><span>Open data · Updated <b>${f(INDEX.fetched_at)}</b> · refreshes daily</span>`;
+  $("status").innerHTML=`<span class="dot"></span><span>Data updated <b>${f(INDEX.fetched_at)}</b>${INDEX.checked_at?` · last checked ${f(INDEX.checked_at)}`:""} · checked daily</span>`;
 }
 function renderUnderstood(P,C){
   const chips=[]; const sn=C.state&&STATES.find(s=>s.code===C.state);
@@ -525,7 +528,9 @@ async function boot(){
   hideError(); status("Loading…",true);
   if(typeof DecompressionStream==="undefined"){showError("bad","Your browser is out of date","Please update your browser (Chrome, Edge, Firefox or Safari) and try again.");status("Unsupported browser",false,true);return}
   try{
-    INDEX=await (await fetchT("data/index.json",{cache:"no-store"})).json(); STATES=INDEX.states||[];
+    try{INDEX=await (await fetchT("data/index.json",{cache:"no-store"})).json(); DB.set("index",INDEX); staleIdx=false}
+    catch(e){const ci=await DB.get("index"); if(!ci) throw e; INDEX=ci; staleIdx=true}   // fall back to the copy saved in this browser
+    STATES=INDEX.states||[];
     if(!STATES.some(s=>s.count)) throw new Error("no data");
   }catch(e){
     console.error(e); INDEX=null; STATES=[];
