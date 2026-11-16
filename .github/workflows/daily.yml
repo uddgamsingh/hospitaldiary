@@ -1,6 +1,6 @@
 name: Daily hospital refresh & deploy
 on:
-  schedule: [{cron: "53 21 * * *"}]   # 03:23 IST every day 
+  schedule: [{cron: "0 10 * * *"}]   # 15:30 IST every day (GitHub uses UTC)
   workflow_dispatch:
 permissions: {contents: read, pages: write, id-token: write}
 concurrency: {group: pages, cancel-in-progress: true}
