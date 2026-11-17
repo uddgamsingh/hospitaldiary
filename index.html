@@ -18,6 +18,7 @@ body{margin:0;font:14px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-s
 a{color:var(--pri);text-decoration:none}a:hover{text-decoration:underline}
 button,input,select{font:inherit;color:inherit}
 .wrap{max-width:1240px;margin:0 auto}
+main.wrap{position:relative;z-index:1}
 
 .hero{background:linear-gradient(135deg,#0a5c4b 0%,#0e7c66 55%,#14a085 100%);color:#fff;padding:22px 20px 78px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -101,20 +102,104 @@ input,select{-webkit-user-select:text;user-select:text}
 mark{background:#fde68a;color:#0f172a;border-radius:3px;padding:0 1px}
 .skel{height:210px;border-radius:14px;background:linear-gradient(90deg,var(--line) 25%,var(--surface) 50%,var(--line) 75%);background-size:200% 100%;animation:sh 1.2s infinite}
 @keyframes sh{to{background-position:-200% 0}}
-.more{display:block;margin:22px auto}
 .none{text-align:center;padding:46px 10px;color:var(--mut)}
 footer{margin-top:40px;border-top:1px solid var(--line);padding:22px 20px 40px;color:var(--mut);font-size:12.5px;text-align:center}
 footer b{color:var(--ink)}.disc{max-width:780px;margin:6px auto 0}
+
+/* ===== v3 look & feel ===== */
+body{background:radial-gradient(900px 500px at 8% -5%,rgba(20,160,133,.10),transparent 60%),radial-gradient(800px 500px at 100% 0%,rgba(37,99,235,.07),transparent 55%),var(--bg);background-attachment:fixed}
+.hero{position:relative;z-index:0;overflow:hidden;background:linear-gradient(120deg,#063f33,#0a5c4b 30%,#0e7c66 60%,#10a081 85%,#0a5c4b);background-size:220% 220%;animation:flow 14s ease-in-out infinite}
+.hero>.wrap{position:relative;z-index:2}
+@keyframes flow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.blob{position:absolute;border-radius:50%;filter:blur(40px);opacity:.35;z-index:1;pointer-events:none}
+.blob.b1{width:340px;height:340px;background:#34d399;top:-120px;right:-60px;animation:float 9s ease-in-out infinite}
+.blob.b2{width:260px;height:260px;background:#38bdf8;bottom:-120px;left:-60px;animation:float 11s ease-in-out infinite reverse}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(26px,18px) scale(1.12)}}
+.ecg{position:absolute;left:0;right:0;bottom:8px;width:100%;height:56px;z-index:1;opacity:.9;pointer-events:none}
+.ecg path{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:2.2}
+.ecg .base{stroke:rgba(255,255,255,.18)}
+.ecg .beat{stroke:#a7f3d0;stroke-dasharray:.14 .86;stroke-dashoffset:1;animation:beat 3.6s linear infinite;filter:drop-shadow(0 0 5px #6ee7b7)}
+@keyframes beat{to{stroke-dashoffset:0}}
+.logo{background:rgba(255,255,255,.2);backdrop-filter:blur(6px);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.45)}60%{box-shadow:0 0 0 12px rgba(255,255,255,0)}}
+.hero h2{font-size:clamp(21px,4.4vw,32px);line-height:1.2;max-width:760px;text-shadow:0 2px 14px rgba(0,0,0,.18)}
+.hero h2 em{font-style:normal;background:linear-gradient(90deg,#fde68a,#a7f3d0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ask{background:rgba(255,255,255,.97);transition:box-shadow .25s,transform .25s}
+.ask:focus-within{box-shadow:0 0 0 4px rgba(167,243,208,.55),0 14px 40px rgba(0,0,0,.25);transform:translateY(-1px)}
+.ask button{background:linear-gradient(135deg,#0e7c66,#0a5c4b);transition:transform .15s,filter .15s}
+.ask button:hover{filter:brightness(1.12);transform:scale(1.03)}
+.ex button{backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.22);transition:.2s}
+.ex button:hover{transform:translateY(-2px);background:rgba(255,255,255,.3)}
+.stat{position:relative;overflow:hidden;display:flex;gap:12px;align-items:center;transition:transform .2s,box-shadow .2s}
+.stat:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(14,124,102,.16)}
+.stat::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:linear-gradient(90deg,#0e7c66,#38bdf8)}
+.stat .ic{width:38px;height:38px;border-radius:11px;background:var(--soft);display:grid;place-items:center;font-size:18px;flex:none}
+.stat b{font-variant-numeric:tabular-nums}
+.controls{backdrop-filter:blur(8px)}
+.btn{transition:.15s}.btn:active{transform:scale(.97)}
+.h3{font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px}
+.h3::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+
+/* state tiles */
+.tiles{gap:12px}
+.tile{position:relative;display:flex;flex-direction:column;gap:6px;padding:14px;overflow:hidden;animation:up .5s both;animation-delay:var(--d,0ms)}
+.tile .tb{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-weight:800;font-size:13px;color:#fff;background:linear-gradient(135deg,#0e7c66,#38bdf8)}
+.tile:hover{box-shadow:0 14px 30px rgba(14,124,102,.18)}
+.tile .meter{height:4px;border-radius:9px;background:var(--line);overflow:hidden;margin-top:2px}
+.tile .meter i{display:block;height:100%;background:linear-gradient(90deg,#0e7c66,#38bdf8);border-radius:9px}
+.tile.off{border-style:dashed;background:transparent;opacity:.8}
+.tile.off .tb{background:linear-gradient(135deg,#94a3b8,#cbd5e1)}
+.tile.off span{color:var(--amber);font-weight:600}
+[data-theme=dark] .tile.off span{color:#fbbf24}
+
+/* hospital cards */
+.card{position:relative;overflow:hidden;padding:16px 16px 16px 20px;animation:up .55s cubic-bezier(.2,.7,.2,1) both;animation-delay:var(--d,0ms)}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#0e7c66,#38bdf8)}
+.card.k-gov::before{background:linear-gradient(180deg,#2563eb,#38bdf8)}
+.card.k-pvt::before{background:linear-gradient(180deg,#f59e0b,#fbbf24)}
+.card:hover{box-shadow:0 14px 34px rgba(14,124,102,.18)}
+.chd{display:flex;gap:12px;align-items:flex-start}
+.av{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-weight:800;font-size:15px;color:#fff;flex:none;background:linear-gradient(135deg,#0e7c66,#14a085);box-shadow:0 6px 14px rgba(14,124,102,.25)}
+.av.gov{background:linear-gradient(135deg,#2563eb,#38bdf8);box-shadow:0 6px 14px rgba(37,99,235,.25)}
+.av.pvt{background:linear-gradient(135deg,#d97706,#fbbf24);box-shadow:0 6px 14px rgba(217,119,6,.25)}
+.chd h3{margin:0}.chd .loc{margin-top:1px}
+.foot a,.cp{transition:.15s}.foot a:hover,.cp:hover{transform:translateY(-1px)}
+.foot a.p{background:linear-gradient(135deg,#0e7c66,#0a5c4b)}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* infinite scroll */
+.sentinel{display:flex;gap:10px;align-items:center;justify-content:center;color:var(--mut);padding:26px 0;font-size:13px}
+.sentinel[hidden],.endmsg[hidden]{display:none}
+.dots{display:inline-flex;gap:5px}.dots i{width:8px;height:8px;border-radius:50%;background:var(--pri);animation:bounce 1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
+.endmsg{text-align:center;color:var(--mut);font-size:13px;padding:22px 0}
+.endmsg::before,.endmsg::after{content:"—";margin:0 10px;opacity:.5}
+.fab{position:fixed;right:18px;bottom:22px;width:46px;height:46px;border-radius:50%;border:0;background:linear-gradient(135deg,#0e7c66,#0a5c4b);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 10px 24px rgba(10,92,75,.4);z-index:40;transition:.2s}
+.fab[hidden]{display:none}.fab:hover{transform:translateY(-3px)}
+
+/* unavailable / empty panels */
+.panel{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin:22px auto;max-width:560px;padding:36px 26px;background:var(--surface);border:1px dashed var(--line);border-radius:20px;box-shadow:var(--shadow);animation:up .5s both}
+.panel .big{font-size:54px;line-height:1;animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.panel h3{margin:4px 0 0;font-size:20px}
+.panel p{margin:0;color:var(--mut);max-width:430px}
+.panel .acts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:8px}
+.panel .badge{padding:4px 12px;border-radius:99px;background:var(--ambersoft);color:var(--amber);font-size:12px;font-weight:700}
+.skel{height:230px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 @media(max-width:600px){.grid{grid-template-columns:1fr}.hero h2{font-size:19px}.ask button{padding:0 14px}.controls select{max-width:none}}
 </style>
 </head>
 <body>
-<section class="hero"><div class="wrap">
+<section class="hero"><div class="blob b1"></div><div class="blob b2"></div>
+<svg class="ecg" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true"><path class="base" d="M0 30 H140 L160 30 L175 6 L195 54 L210 30 H260 L270 22 L282 30 H400 H540 L560 30 L575 6 L595 54 L610 30 H660 L670 22 L682 30 H800 H940 L960 30 L975 6 L995 54 L1010 30 H1060 L1070 22 L1082 30 H1200"/><path class="beat" pathLength="1" d="M0 30 H140 L160 30 L175 6 L195 54 L210 30 H260 L270 22 L282 30 H400 H540 L560 30 L575 6 L595 54 L610 30 H660 L670 22 L682 30 H800 H940 L960 30 L975 6 L995 54 L1010 30 H1060 L1070 22 L1082 30 H1200"/></svg>
+<div class="wrap">
   <div class="top">
     <div class="brand"><div class="logo">🏥</div><div><h1>Hospital Directory</h1><small>by Uddgam · All India</small></div></div>
     <button class="icon-btn" id="theme" title="Toggle dark mode">🌙</button>
   </div>
-  <h2>Find any hospital in India — just say what you need</h2>
+  <h2>Find any hospital in India — <em>just say what you need</em></h2>
   <form class="ask" id="askForm">
     <input id="q" type="search" autocomplete="off" placeholder='e.g. "private heart hospital in Hyderabad with emergency"'>
     <button type="submit">Search</button>
@@ -167,7 +252,8 @@ footer b{color:var(--ink)}.disc{max-width:780px;margin:6px auto 0}
 
   <div id="landing"></div>
   <div class="grid" id="grid"></div>
-  <button class="btn more" id="more" hidden>Show more</button>
+  <div class="sentinel" id="sentinel" hidden><span class="dots"><i></i><i></i><i></i></span>Loading more hospitals…</div>
+  <div class="endmsg" id="endmsg" hidden>You've reached the end of the list</div>
 </main>
 
 <footer>
@@ -176,6 +262,7 @@ footer b{color:var(--ink)}.disc{max-width:780px;margin:6px auto 0}
   <div class="disc">Community-maintained data can be incomplete or outdated, and district names come from map boundaries. Always call the hospital to confirm details. In a medical emergency in India dial <b>108</b> (ambulance) or <b>112</b>.</div>
 </footer>
 
+<button class="fab" id="fab" title="Back to top" hidden>↑</button>
 <div class="toast" id="toast"></div>
 <script>
 const $ = id => document.getElementById(id);
@@ -358,6 +445,7 @@ async function runInner(updateUrl=true){
   const wantState=P.state||M.state;
   const needAll=!wantState&&(text.trim()||manual||M.district);
   if(!wantState&&!needAll){ if(my===token){hideError();renderLanding();} return; }
+  if(wantState){const sm=STATES.find(s=>s.code===wantState); if(sm&&!sm.count){ if(my===token){hideError();renderUnavailable(sm.name,"state / UT");syncUrl();} return; }}
   const want=wantState?[wantState]:STATES.filter(s=>s.count).map(s=>s.code);
   const failed=await ensure(want);
   if(my!==token) return;
@@ -379,7 +467,7 @@ async function runInner(updateUrl=true){
   else if(s==="beds") VIEW.sort((a,b)=>(b.beds||0)-(a.beds||0)||a.name.localeCompare(b.name));
   else if(s==="name") VIEW.sort((a,b)=>a.name.localeCompare(b.name));
   else {VIEW.forEach(h=>h.r=relevance(h,C));VIEW.sort((a,b)=>b.r-a.r||a.name.localeCompare(b.name))}
-  $("landing").innerHTML=""; shown=0; $("grid").innerHTML=""; renderUnderstood(P,C); renderMore(C);
+  $("landing").innerHTML=""; shown=0; $("grid").innerHTML=""; renderUnderstood(P,C); renderMore(C); fillViewport();
   if(partial) showError("warn","Some data couldn't be loaded",`${partial} state(s) failed to load, so results may be incomplete. Please try again after some time.`);
   else if(staleIdx||usedCache) showError("warn","Showing saved data","We couldn't check for the latest update right now. Please try again after some time.");
   else hideError();
@@ -415,8 +503,9 @@ function card(h,C,i){
   const row=(ic,v,href)=>`<i>${ic}</i><span>${v?(href?`<a href="${esc(href)}" target="_blank" rel="noopener">${esc(v)}</a>`:esc(v)):'<span class="empty">Not listed</span>'}</span>`;
   const web=h.web&&!/^https?:/i.test(h.web)?"http://"+h.web:h.web;
   const tel=h.phone?"tel:"+h.phone.split(/[;,/]/)[0].replace(/[^\d+]/g,""):"";
-  return `<article class="card"><h3>${hl(h.name,C)}</h3>
-    <div class="loc">${esc([h.dist,h.stateName].filter(Boolean).join(", "))}</div>${h.te?`<div class="te">${esc(h.te)}</div>`:""}
+  const ini=(h.name.replace(/[^A-Za-z ]/g,"").split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("")||"H").toUpperCase();
+  return `<article class="card ${h.kind?"k-"+h.kind:""}" style="--d:${(i%12)*45}ms"><div class="chd"><div class="av ${h.kind}">${ini}</div><div><h3>${hl(h.name,C)}</h3>
+    <div class="loc">📍 ${esc([h.dist,h.stateName].filter(Boolean).join(", "))}</div></div></div>${h.te?`<div class="te">${esc(h.te)}</div>`:""}
     <div class="tags">${h.kind==="gov"?'<span class="tag blue">Government</span>':h.kind==="pvt"?'<span class="tag amber">Private / Trust</span>':""}
       ${h.er==="yes"?'<span class="tag red">Emergency</span>':""}${/24\s*\/\s*7/.test(h.hours||"")?'<span class="tag">24/7</span>':""}
       ${h.beds?`<span class="tag">${h.beds} beds</span>`:""}${h.wheel==="yes"?'<span class="tag">♿ Accessible</span>':""}</div>
@@ -429,31 +518,66 @@ function card(h,C,i){
       ${h.d!=null&&$("sort").value==="near"?`<span class="dist">${h.d.toFixed(1)} km</span>`:""}</div></article>`;
 }
 let curC=null;
-function renderMore(C){
-  if(C) curC=C;
-  const slice=VIEW.slice(shown,shown+PAGE);
-  $("grid").insertAdjacentHTML("beforeend",slice.map((h,k)=>card(h,curC,shown+k)).join(""));
-  shown+=slice.length; $("more").hidden=shown>=VIEW.length;
-  if(!VIEW.length) $("grid").innerHTML='<div class="none"><b>No hospitals match.</b><br>Try fewer words or <a href="#" id="clr">clear all filters</a>.</div>';
-  $("count").textContent=`Showing ${shown.toLocaleString()} of ${VIEW.length.toLocaleString()} matching`;
+const IC={all:"🏥",phone:"📞",web:"🌐",er:"🚑",dist:"📍",states:"🗺️",upd:"🕒"};
+function statHtml(ic,k,v,anim){return `<div class="stat"><div class="ic">${ic}</div><div><b ${anim?`data-n="${v}"`:""}>${anim?0:esc(v)}</b><span>${k}</span></div></div>`}
+function animateCounts(){
+  const red=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  document.querySelectorAll("[data-n]").forEach(el=>{
+    const n=+el.dataset.n; if(red||n<20){el.textContent=n.toLocaleString();return}
+    const t0=performance.now(),D=800;
+    (function f(t){const p=Math.min(1,(t-t0)/D),e=1-Math.pow(1-p,3);el.textContent=Math.round(n*e).toLocaleString();if(p<1)requestAnimationFrame(f)})(t0);
+  });
+}
+function renderStats(){
   const n=f=>VIEW.filter(f).length;
-  $("stats").innerHTML=[["Matching hospitals",VIEW.length],["With phone",n(h=>h.phone)],["With website",n(h=>h.web)],["Emergency",n(h=>h.er==="yes")],["Districts",new Set(VIEW.map(h=>h.dist).filter(Boolean)).size]]
-    .map(([k,v])=>`<div class="stat"><b>${v.toLocaleString()}</b><span>${k}</span></div>`).join("");
+  $("stats").innerHTML=[[IC.all,"Matching hospitals",VIEW.length],[IC.phone,"With phone",n(h=>h.phone)],[IC.web,"With website",n(h=>h.web)],[IC.er,"Emergency",n(h=>h.er==="yes")],[IC.dist,"Districts",new Set(VIEW.map(h=>h.dist).filter(Boolean)).size]]
+    .map(([i,k,v])=>statHtml(i,k,v,true)).join(""); animateCounts();
+}
+function renderMore(C){
+  if(C){curC=C; renderStats(); if(!VIEW.length){renderNoMatch();return}}
+  const slice=VIEW.slice(shown,shown+PAGE); if(!slice.length) return;
+  $("grid").insertAdjacentHTML("beforeend",slice.map((h,k)=>card(h,curC,shown+k)).join(""));
+  shown+=slice.length;
+  const left=shown<VIEW.length; $("sentinel").hidden=!left; $("endmsg").hidden=left||VIEW.length<=PAGE;
+  $("count").textContent=`Showing ${shown.toLocaleString()} of ${VIEW.length.toLocaleString()} matching`;
+  statusLine();
+}
+function fillViewport(){   // keeps loading until the page is full, then waits for scrolling
+  let guard=0;
+  while(!$("sentinel").hidden&&shown<VIEW.length&&$("sentinel").getBoundingClientRect().top<innerHeight+700&&guard++<6) renderMore();
+}
+function renderNoMatch(){
+  $("sentinel").hidden=true;$("endmsg").hidden=true;$("count").textContent="0 matching";
+  $("grid").innerHTML=`<div class="panel" style="grid-column:1/-1"><div class="big">🔎</div><h3>No hospitals found</h3>
+    <p>Nothing matches your search and filters. Try fewer words, a different spelling, or remove a filter.</p>
+    <div class="acts"><button class="btn pri" id="clr">Clear all filters</button></div></div>`;
+  statusLine();
+}
+function renderUnavailable(name,scope){
+  VIEW=[];$("grid").innerHTML="";$("sentinel").hidden=true;$("endmsg").hidden=true;$("understood").innerHTML="";$("count").textContent="";$("stats").innerHTML="";
+  fillDistricts(M.state||"");
+  $("landing").innerHTML=`<div class="panel"><div class="big">📭</div><span class="badge">Data unavailable</span>
+    <h3>No hospital data for ${esc(name)}</h3>
+    <p>We don't have hospital records for this ${scope||"state"} right now. It may be missing from the open map data, or it hasn't been collected yet. Please try again after some time — it is checked every day.</p>
+    <div class="acts"><button class="btn pri" id="clr">Browse other states</button></div></div>`;
   statusLine();
 }
 function renderLanding(){
-  VIEW=[];$("grid").innerHTML="";$("more").hidden=true;$("understood").innerHTML="";$("count").textContent="";
+  VIEW=[];$("grid").innerHTML="";$("sentinel").hidden=true;$("endmsg").hidden=true;$("understood").innerHTML="";$("count").textContent="";
   fillDistricts("");
-  $("stats").innerHTML=[["Hospitals in India",INDEX.total],["States & UTs",STATES.filter(s=>s.count).length],["Updated",null]]
-    .map(([k,v])=>`<div class="stat"><b>${v===null?new Date(INDEX.fetched_at).toLocaleDateString([], {day:"numeric",month:"short"}):v.toLocaleString()}</b><span>${k}</span></div>`).join("");
+  $("stats").innerHTML=statHtml(IC.all,"Hospitals in India",INDEX.total,true)+statHtml(IC.states,"States & UTs with data",STATES.filter(s=>s.count).length,true)
+    +statHtml(IC.upd,"Last updated",new Date(INDEX.fetched_at).toLocaleDateString([], {day:"numeric",month:"short"}),false);
+  animateCounts();
+  const max=Math.max(1,...STATES.map(s=>s.count));
   $("landing").innerHTML=`<div class="h3">Browse by state / UT</div><div class="tiles">`+
-    STATES.map(s=>`<button class="tile" data-c="${s.code}"><b>${esc(s.name)}</b><span>${s.count?s.count.toLocaleString()+" hospitals":"no data yet"}</span></button>`).join("")+`</div>`;
+    STATES.map((s,i)=>`<button class="tile ${s.count?"":"off"}" data-c="${s.code}" style="--d:${Math.min(i,24)*25}ms"><div class="tb">${s.code}</div><b>${esc(s.name)}</b>
+      <span>${s.count?s.count.toLocaleString()+" hospitals":"Data unavailable"}</span>${s.count?`<div class="meter"><i style="width:${Math.max(6,Math.round(100*Math.sqrt(s.count/max)))}%"></i></div>`:""}</button>`).join("")+`</div>`;
   statusLine(); syncUrl();
 }
 function fillDistricts(code){
   const sel=$("district"), cur=M.district;
   const ds=code&&LOADED[code]?[...new Set(LOADED[code].map(h=>h.dist).filter(Boolean))].sort():[];
-  sel.innerHTML='<option value="">All districts</option>'+ds.map(d=>`<option>${esc(d)}</option>`).join("");
+  sel.innerHTML=`<option value="">${code&&!ds.length?"District data unavailable":"All districts"}</option>`+ds.map(d=>`<option>${esc(d)}</option>`).join("");
   sel.disabled=!ds.length; sel.value=ds.includes(cur)?cur:""; if(sel.value!==cur) M.district=sel.value;
 }
 
@@ -514,13 +638,21 @@ $("fBeds").oninput=e=>{M.beds=+e.target.value||0;updFilterBtn();clearTimeout(tm)
 $("fScore").onchange=e=>{M.score=+e.target.value;updFilterBtn();run()};
 $("pills").onclick=e=>{const p=e.target.closest(".pill");if(!p)return;const k=p.dataset.k==="beds"?"hasBeds":p.dataset.k;M[k]=!M[k];setPills();updFilterBtn();run()};
 $("reset").onclick=()=>{resetAll();updFilterBtn()};
-$("landing").onclick=e=>{const t=e.target.closest(".tile");if(t){M.state=t.dataset.c;$("state").value=M.state;run();scrollTo({top:0,behavior:"smooth"})}};
+$("landing").onclick=e=>{if(e.target.id==="clr"){resetAll();updFilterBtn();return}const t=e.target.closest(".tile");if(t){M.state=t.dataset.c;$("state").value=M.state;run();scrollTo({top:0,behavior:"smooth"})}};
 $("grid").onclick=e=>{const c=e.target.closest(".cp");if(c){copyOne(+c.dataset.i);return}if(e.target.id==="clr"){e.preventDefault();resetAll();updFilterBtn()}};
-$("more").onclick=()=>renderMore();
 $("vGrid").onclick=()=>{$("grid").classList.remove("list");$("vGrid").classList.add("on");$("vList").classList.remove("on")};
 $("vList").onclick=()=>{$("grid").classList.add("list");$("vList").classList.add("on");$("vGrid").classList.remove("on")};
 $("theme").onclick=()=>{const d=document.documentElement.dataset.theme==="dark"?"":"dark";document.documentElement.dataset.theme=d;$("theme").textContent=d?"☀️":"🌙";try{localStorage.setItem("theme",d)}catch{}};
-addEventListener("scroll",()=>{if(innerHeight+scrollY>document.body.offsetHeight-700&&!$("more").hidden)renderMore()},{passive:true});
+addEventListener("scroll",()=>{fillViewport();$("fab").hidden=scrollY<700},{passive:true});
+new IntersectionObserver(es=>{if(es[0].isIntersecting)fillViewport()},{rootMargin:"700px"}).observe($("sentinel"));
+$("fab").onclick=()=>scrollTo({top:0,behavior:"smooth"});
+// typewriter placeholder
+(()=>{const ex=["private heart hospital in Hyderabad with emergency","24x7 government hospital in Pune","eye hospital in Chennai","cancer hospitals Kerala with more than 100 beds","children hospital near me","dialysis centre in Jaipur"];
+ let i=0,j=0,del=false;
+ (function tick(){const q=$("q"); if(q.value||document.activeElement===q){q.placeholder="Search hospitals…";return setTimeout(tick,1500)}
+  const w=ex[i]; j+=del?-1:1; q.placeholder='e.g. "'+w.slice(0,j)+(j<w.length||del?"":"")+'"';
+  let t=del?22:48; if(!del&&j===w.length){del=true;t=1600} else if(del&&j===0){del=false;i=(i+1)%ex.length;t=400}
+  setTimeout(tick,t)})();})();
 
 /* ============ Boot ============ */
 let booted=false;
@@ -537,7 +669,7 @@ async function boot(){
     showError("bad",...SERVICE_DOWN); status("Unable to load hospital data",false,true);
     $("stats").innerHTML=""; $("landing").innerHTML=""; $("grid").innerHTML=""; return;
   }
-  $("state").innerHTML='<option value="">All India</option>'+STATES.map(s=>`<option value="${s.code}">${esc(s.name)}${s.count?` (${s.count.toLocaleString()})`:""}</option>`).join("");
+  $("state").innerHTML='<option value="">All India</option>'+STATES.map(s=>`<option value="${s.code}">${esc(s.name)}${s.count?` (${s.count.toLocaleString()})`:" — data unavailable"}</option>`).join("");
   if(!booted){
     const p=new URLSearchParams(location.hash.slice(1));
     if(p.get("q"))$("q").value=p.get("q"); if(p.get("state")){M.state=p.get("state");$("state").value=M.state}
