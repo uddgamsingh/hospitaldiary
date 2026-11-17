@@ -188,16 +188,61 @@ body{background:radial-gradient(900px 500px at 8% -5%,rgba(20,160,133,.10),trans
 .panel .badge{padding:4px 12px;border-radius:99px;background:var(--ambersoft);color:var(--amber);font-size:12px;font-weight:700}
 .skel{height:230px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ===== v4 ===== */
+.brand{cursor:pointer}
+.tools{display:flex;gap:8px;align-items:center}
+.sos{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:7px 11px;font-weight:700;font-size:13px;white-space:nowrap;animation:sosb 2.6s ease-in-out infinite}
+.sos:hover{background:#ef4444;border-color:#ef4444;text-decoration:none}
+@keyframes sosb{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.35)}50%{box-shadow:0 0 0 7px rgba(255,255,255,0)}}
+.hero{padding-bottom:84px}
+.monitor{position:relative;display:flex;align-items:center;gap:14px;margin-top:20px;padding:8px 16px;border-radius:18px;background:rgba(2,24,20,.38);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(8px);box-shadow:inset 0 0 40px rgba(16,185,129,.12),0 10px 30px rgba(0,0,0,.18)}
+.monitor::after{content:"";position:absolute;inset:0;border-radius:18px;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 8px);pointer-events:none}
+.monitor svg{flex:1;height:62px;min-width:0;overflow:visible}
+.monitor path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.monitor .grid{stroke:rgba(167,243,208,.18);stroke-width:1;stroke-dasharray:3 6}
+.monitor .base{stroke:rgba(167,243,208,.28);stroke-width:2}
+.monitor .beat{stroke:#6ee7b7;stroke-width:3.2;stroke-dasharray:.12 .88;stroke-dashoffset:1;animation:beat 3.2s linear infinite;filter:drop-shadow(0 0 7px #34d399) drop-shadow(0 0 14px #10b981)}
+.m-l,.m-r{display:flex;align-items:center;gap:10px;color:#fff;flex:none}
+.m-l b{display:block;font-size:26px;line-height:1;font-variant-numeric:tabular-nums;color:#a7f3d0}
+.m-l small,.m-r small{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+.hrt{font-size:26px;color:#fb7185;animation:hb .9s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(251,113,133,.8))}
+@keyframes hb{0%,100%{transform:scale(1)}15%{transform:scale(1.28)}30%{transform:scale(1)}45%{transform:scale(1.18)}}
+.m-r{text-align:right}.m-r b{font-size:20px;color:#fde68a;display:block}
+@media(max-width:560px){.m-r{display:none}.monitor{padding:6px 12px}.m-l b{font-size:22px}.sos{padding:6px 9px;font-size:12px}}
+
+/* quick-start sections */
+.sec{margin:26px 0 8px}
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.cat{--g:linear-gradient(135deg,#0e7c66,#14a085);position:relative;overflow:hidden;border:0;border-radius:18px;padding:16px 14px 18px;min-height:104px;text-align:left;color:#fff;cursor:pointer;background:var(--g);box-shadow:0 8px 20px rgba(15,23,42,.12);transition:transform .2s,box-shadow .2s;animation:up .5s both;animation-delay:var(--d,0ms)}
+.cat:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 16px 30px rgba(15,23,42,.2)}
+.cat b{display:block;font-size:15px;position:relative;z-index:1}.cat span{font-size:12px;opacity:.9;position:relative;z-index:1}
+.cat i{position:absolute;right:-6px;bottom:-12px;font-style:normal;font-size:62px;opacity:.28;transition:.3s;transform:rotate(-8deg)}
+.cat:hover i{transform:rotate(6deg) scale(1.15);opacity:.4}
+.cchips{display:flex;flex-wrap:wrap;gap:9px}
+.cchip{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:99px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:13.5px;font-weight:500;box-shadow:var(--shadow);transition:.18s;animation:up .45s both;animation-delay:var(--d,0ms)}
+.cchip small{color:var(--mut);font-weight:400}
+.cchip:hover{border-color:var(--pri);color:var(--pri);transform:translateY(-2px)}
+.cchip.rec{background:var(--bluesoft);border-color:transparent;color:var(--blue)}
+
+/* save (favourite) */
+.fav{margin-left:auto;flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--mut);font-size:16px;cursor:pointer;transition:.2s}
+.fav:hover{color:#e11d48;border-color:#e11d48}
+.fav.on{background:#ffe4e6;color:#e11d48;border-color:#fda4af}
+.fav.pop{animation:pop .4s}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.45)}100%{transform:scale(1)}}
+[data-theme=dark] .fav.on{background:#4c0519}
+.chd .fav{align-self:flex-start}
 @media(max-width:600px){.grid{grid-template-columns:1fr}.hero h2{font-size:19px}.ask button{padding:0 14px}.controls select{max-width:none}}
 </style>
 </head>
 <body>
 <section class="hero"><div class="blob b1"></div><div class="blob b2"></div>
-<svg class="ecg" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true"><path class="base" d="M0 30 H140 L160 30 L175 6 L195 54 L210 30 H260 L270 22 L282 30 H400 H540 L560 30 L575 6 L595 54 L610 30 H660 L670 22 L682 30 H800 H940 L960 30 L975 6 L995 54 L1010 30 H1060 L1070 22 L1082 30 H1200"/><path class="beat" pathLength="1" d="M0 30 H140 L160 30 L175 6 L195 54 L210 30 H260 L270 22 L282 30 H400 H540 L560 30 L575 6 L595 54 L610 30 H660 L670 22 L682 30 H800 H940 L960 30 L975 6 L995 54 L1010 30 H1060 L1070 22 L1082 30 H1200"/></svg>
 <div class="wrap">
   <div class="top">
     <div class="brand"><div class="logo">🏥</div><div><h1>Hospital Directory</h1><small>by Uddgam · All India</small></div></div>
-    <button class="icon-btn" id="theme" title="Toggle dark mode">🌙</button>
+    <div class="tools"><a class="sos" href="tel:108" title="Ambulance">🚑 108</a><a class="sos" href="tel:112" title="Emergency">🆘 112</a>
+    <button class="icon-btn" id="theme" title="Toggle dark mode">🌙</button></div>
   </div>
   <h2>Find any hospital in India — <em>just say what you need</em></h2>
   <form class="ask" id="askForm">
@@ -209,6 +254,11 @@ body{background:radial-gradient(900px 500px at 8% -5%,rgba(20,160,133,.10),trans
     <button type="button">eye hospital in Chennai</button>
     <button type="button">cancer hospitals Kerala with more than 100 beds</button>
     <button type="button">children emergency near me</button>
+  </div>
+  <div class="monitor" aria-hidden="true">
+    <div class="m-l"><span class="hrt">♥</span><div><b id="bpm">72</b><small>BPM</small></div></div>
+    <svg viewBox="0 0 1200 70" preserveAspectRatio="none"><path class="grid" d="M0 35H1200"/><path class="base" d="M0 35 H110 L130 35 L145 8 L165 62 L180 35 H215 L228 24 L242 35 H300 H410 L430 35 L445 8 L465 62 L480 35 H515 L528 24 L542 35 H600 H710 L730 35 L745 8 L765 62 L780 35 H815 L828 24 L842 35 H900 H1010 L1030 35 L1045 8 L1065 62 L1080 35 H1115 L1128 24 L1142 35 H1200"/><path class="beat" pathLength="1" d="M0 35 H110 L130 35 L145 8 L165 62 L180 35 H215 L228 24 L242 35 H300 H410 L430 35 L445 8 L465 62 L480 35 H515 L528 24 L542 35 H600 H710 L730 35 L745 8 L765 62 L780 35 H815 L828 24 L842 35 H900 H1010 L1030 35 L1045 8 L1065 62 L1080 35 H1115 L1128 24 L1142 35 H1200"/></svg>
+    <div class="m-r"><b>24×7</b><small>Care never sleeps</small></div>
   </div>
 </div></section>
 
@@ -225,6 +275,7 @@ body{background:radial-gradient(900px 500px at 8% -5%,rgba(20,160,133,.10),trans
       <option value="info">Sort: Most complete info</option><option value="beds">Sort: Most beds</option><option value="near">Sort: Nearest to me</option>
     </select>
     <span class="sp"></span>
+    <button class="btn" id="savedBtn">♥ Saved (0)</button>
     <button class="btn" id="near">📍 Near me</button>
     <button class="btn" id="advBtn">⚙ Filters</button>
     <div class="seg"><button id="vGrid" class="on" title="Grid">▦</button><button id="vList" title="List">☰</button></div>
@@ -257,7 +308,7 @@ body{background:radial-gradient(900px 500px at 8% -5%,rgba(20,160,133,.10),trans
 </main>
 
 <footer>
-  <div><b>Hospital Directory by Uddgam</b> · Data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> via the free Overpass API</div>
+  <div><b>Hospital Directory by Uddgam</b> · Made with ♥ for India</div>
   <div class="disc">Copying is available one hospital at a time using the Copy button. Bulk copying, scraping or automated collection of this site is not permitted.</div>
   <div class="disc">Community-maintained data can be incomplete or outdated, and district names come from map boundaries. Always call the hospital to confirm details. In a medical emergency in India dial <b>108</b> (ambulance) or <b>112</b>.</div>
 </footer>
@@ -367,7 +418,7 @@ function relevance(h,C){ let s=0; const n=h.name.toLowerCase(); for(const w of C
 /* ============ State ============ */
 let INDEX=null, STATES=[], LOADED={}, ALL=[], PLACES=[], VOCAB=new Map(), VIEW=[], shown=0;
 let M={state:"",district:"",kind:"",spec:"",beds:0,score:0,er:false,h24:false,phone:false,web:false,email:false,wheel:false,hasBeds:false};
-let me=null, token=0, lastP=null, partial=0, usedCache=0, staleIdx=false;
+let me=null, token=0, lastP=null, partial=0, usedCache=0, staleIdx=false, savedMode=false, explicitSearch=false;
 
 function decorate(h,code,name){
   h.state=code; h.stateName=name; h.dist=h.dist||"";
@@ -440,6 +491,7 @@ async function run(updateUrl=true){
 }
 async function runInner(updateUrl=true){
   const my=++token, text=$("q").value;
+  if(savedMode){hideError();renderSaved();return}
   let P=parse(text,ctx());
   const manual=Object.entries(M).some(([k,v])=>k!=="state"&&k!=="district"&&v);
   const wantState=P.state||M.state;
@@ -468,6 +520,7 @@ async function runInner(updateUrl=true){
   else if(s==="name") VIEW.sort((a,b)=>a.name.localeCompare(b.name));
   else {VIEW.forEach(h=>h.r=relevance(h,C));VIEW.sort((a,b)=>b.r-a.r||a.name.localeCompare(b.name))}
   $("landing").innerHTML=""; shown=0; $("grid").innerHTML=""; renderUnderstood(P,C); renderMore(C); fillViewport();
+  if(explicitSearch&&text.trim()&&VIEW.length) addRecent(text.trim()); explicitSearch=false;
   if(partial) showError("warn","Some data couldn't be loaded",`${partial} state(s) failed to load, so results may be incomplete. Please try again after some time.`);
   else if(staleIdx||usedCache) showError("warn","Showing saved data","We couldn't check for the latest update right now. Please try again after some time.");
   else hideError();
@@ -505,7 +558,7 @@ function card(h,C,i){
   const tel=h.phone?"tel:"+h.phone.split(/[;,/]/)[0].replace(/[^\d+]/g,""):"";
   const ini=(h.name.replace(/[^A-Za-z ]/g,"").split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("")||"H").toUpperCase();
   return `<article class="card ${h.kind?"k-"+h.kind:""}" style="--d:${(i%12)*45}ms"><div class="chd"><div class="av ${h.kind}">${ini}</div><div><h3>${hl(h.name,C)}</h3>
-    <div class="loc">📍 ${esc([h.dist,h.stateName].filter(Boolean).join(", "))}</div></div></div>${h.te?`<div class="te">${esc(h.te)}</div>`:""}
+    <div class="loc">📍 ${esc([h.dist,h.stateName].filter(Boolean).join(", "))}</div></div><button class="fav ${getSaved()[h.id]?"on":""}" data-id="${esc(h.id)}" title="Save this hospital" aria-label="Save">♥</button></div>${h.te?`<div class="te">${esc(h.te)}</div>`:""}
     <div class="tags">${h.kind==="gov"?'<span class="tag blue">Government</span>':h.kind==="pvt"?'<span class="tag amber">Private / Trust</span>':""}
       ${h.er==="yes"?'<span class="tag red">Emergency</span>':""}${/24\s*\/\s*7/.test(h.hours||"")?'<span class="tag">24/7</span>':""}
       ${h.beds?`<span class="tag">${h.beds} beds</span>`:""}${h.wheel==="yes"?'<span class="tag">♿ Accessible</span>':""}</div>
@@ -562,16 +615,51 @@ function renderUnavailable(name,scope){
     <div class="acts"><button class="btn pri" id="clr">Browse other states</button></div></div>`;
   statusLine();
 }
+const lsGet=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||d)}catch{return JSON.parse(d)}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
+const getSaved=()=>lsGet("uddgam_saved","{}");
+function updSaved(){const n=Object.keys(getSaved()).length;$("savedBtn").textContent=`♥ Saved (${n})`;$("savedBtn").classList.toggle("on",savedMode)}
+function addRecent(q){const r=lsGet("uddgam_recent","[]").filter(x=>x.toLowerCase()!==q.toLowerCase());r.unshift(q);lsSet("uddgam_recent",r.slice(0,6))}
+function toggleSave(id){
+  const sv=getSaved(); let h=VIEW.find(x=>x.id===id)||sv[id];
+  if(sv[id]){delete sv[id];toast("Removed from saved")}
+  else if(h){const {d,r,...rest}=h;sv[id]=rest;toast("Saved ♥ — find it under “Saved”")}
+  lsSet("uddgam_saved",sv); updSaved(); return !!sv[id];
+}
+function renderSaved(){
+  const list=Object.values(getSaved()).sort((a,b)=>a.name.localeCompare(b.name));
+  VIEW=list; shown=0; $("grid").innerHTML=""; $("landing").innerHTML=""; $("sentinel").hidden=true; $("endmsg").hidden=true; fillDistricts("");
+  $("understood").innerHTML='<span>Showing:</span><span class="u g">♥ Your saved hospitals</span>'; statusLine();
+  if(!list.length){
+    $("stats").innerHTML=""; $("count").textContent="";
+    $("landing").innerHTML=`<div class="panel"><div class="big">💚</div><h3>No saved hospitals yet</h3><p>Tap the ♥ on any hospital card to keep it here for quick access — saved only on this device.</p><div class="acts"><button class="btn pri" id="clr">Start exploring</button></div></div>`; return;
+  }
+  renderMore({text:[]}); fillViewport();
+}
+const CATS=[["🚑","Emergency","Open for urgent care","emergency hospitals","#ef4444,#f97316"],["❤️","Heart","Cardiology & cardiac","heart hospitals","#e11d48,#fb7185"],
+ ["👁️","Eye care","Ophthalmology","eye hospitals","#2563eb,#38bdf8"],["👶","Children","Paediatrics","children hospitals","#f59e0b,#fbbf24"],
+ ["🎗️","Cancer","Oncology centres","cancer hospitals","#7c3aed,#a78bfa"],["🤰","Maternity","Women & newborn","maternity hospitals","#db2777,#f472b6"],
+ ["🧠","Neuro","Brain & spine","neuro hospitals","#4f46e5,#818cf8"],["🦴","Ortho","Bones & joints","ortho hospitals","#0d9488,#2dd4bf"],
+ ["🦷","Dental","Dentists","dental hospitals","#0891b2,#22d3ee"],["🕐","Open 24×7","Round the clock","24x7 hospitals","#0e7c66,#34d399"],
+ ["🏛️","Government","Public hospitals","government hospitals","#1d4ed8,#60a5fa"],["📍","Near me","Closest first","hospitals near me","#475569,#94a3b8"]];
+const CITIES=[["Hyderabad","TG"],["Mumbai","MH"],["Pune","MH"],["Delhi","DL"],["Bengaluru","KA"],["Chennai","TN"],["Kolkata","WB"],["Ahmedabad","GJ"],["Jaipur","RJ"],["Lucknow","UP"],["Kochi","KL"],["Visakhapatnam","AP"],["Patna","BR"],["Bhopal","MP"],["Chandigarh","CH"],["Bhubaneswar","OD"]];
 function renderLanding(){
   VIEW=[];$("grid").innerHTML="";$("sentinel").hidden=true;$("endmsg").hidden=true;$("understood").innerHTML="";$("count").textContent="";
   fillDistricts("");
   $("stats").innerHTML=statHtml(IC.all,"Hospitals in India",INDEX.total,true)+statHtml(IC.states,"States & UTs with data",STATES.filter(s=>s.count).length,true)
     +statHtml(IC.upd,"Last updated",new Date(INDEX.fetched_at).toLocaleDateString([], {day:"numeric",month:"short"}),false);
   animateCounts();
-  const max=Math.max(1,...STATES.map(s=>s.count));
-  $("landing").innerHTML=`<div class="h3">Browse by state / UT</div><div class="tiles">`+
+  const max=Math.max(1,...STATES.map(s=>s.count)), rec=lsGet("uddgam_recent","[]");
+  const stName=c=>(STATES.find(s=>s.code===c)||{}).name||"";
+  const cities=CITIES.filter(([,c])=>(STATES.find(s=>s.code===c)||{}).count);
+  $("landing").innerHTML=
+   (rec.length?`<div class="sec"><div class="h3">🕘 Recent searches</div><div class="cchips">${rec.map(q=>`<button class="cchip rec" data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div></div>`:"")+
+   `<div class="sec"><div class="h3">What do you need?</div><div class="cats">`+
+    CATS.map(([e,t,sub,q,g],i)=>`<button class="cat" data-q="${esc(q)}" style="--g:linear-gradient(135deg,${g.split(",")[0]},${g.split(",")[1]});--d:${i*40}ms"><b>${t}</b><span>${sub}</span><i>${e}</i></button>`).join("")+`</div></div>`+
+   (cities.length?`<div class="sec"><div class="h3">Popular cities</div><div class="cchips">`+cities.map(([c,st],i)=>`<button class="cchip" data-q="${c} ${esc(stName(st))}" style="--d:${i*30}ms">📍 ${c} <small>${st}</small></button>`).join("")+`</div></div>`:"")+
+   `<div class="sec"><div class="h3">Browse by state / UT</div><div class="tiles">`+
     STATES.map((s,i)=>`<button class="tile ${s.count?"":"off"}" data-c="${s.code}" style="--d:${Math.min(i,24)*25}ms"><div class="tb">${s.code}</div><b>${esc(s.name)}</b>
-      <span>${s.count?s.count.toLocaleString()+" hospitals":"Data unavailable"}</span>${s.count?`<div class="meter"><i style="width:${Math.max(6,Math.round(100*Math.sqrt(s.count/max)))}%"></i></div>`:""}</button>`).join("")+`</div>`;
+      <span>${s.count?s.count.toLocaleString()+" hospitals":"Data unavailable"}</span>${s.count?`<div class="meter"><i style="width:${Math.max(6,Math.round(100*Math.sqrt(s.count/max)))}%"></i></div>`:""}</button>`).join("")+`</div></div>`;
   statusLine(); syncUrl();
 }
 function fillDistricts(code){
@@ -619,16 +707,17 @@ function syncUrl(){
 function setPills(){document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("on",!!M[p.dataset.k==="beds"?"hasBeds":p.dataset.k]))}
 function resetAll(){
   $("q").value=""; M={state:"",district:"",kind:"",spec:"",beds:0,score:0,er:false,h24:false,phone:false,web:false,email:false,wheel:false,hasBeds:false};
-  ["state","district","fKind","fSpec"].forEach(i=>$(i).value=""); $("fBeds").value=""; $("fScore").value="0"; $("sort").value="rel"; setPills(); run();
+  savedMode=false; updSaved(); ["state","district","fKind","fSpec"].forEach(i=>$(i).value=""); $("fBeds").value=""; $("fScore").value="0"; $("sort").value="rel"; setPills(); run();
 }
 function updFilterBtn(){const n=[M.kind,M.spec,M.beds,M.score,M.er,M.h24,M.phone,M.web,M.email,M.wheel,M.hasBeds].filter(Boolean).length;$("advBtn").textContent="⚙ Filters"+(n?` (${n})`:"");$("advBtn").classList.toggle("on",!!n)}
 
 /* ============ Events ============ */
-$("askForm").onsubmit=e=>{e.preventDefault();run()};
-document.querySelectorAll(".ex button").forEach(b=>b.onclick=()=>{$("q").value=b.textContent;run()});
-let tm;$("q").addEventListener("input",()=>{clearTimeout(tm);tm=setTimeout(run,350)});
-$("state").onchange=()=>{M.state=$("state").value;M.district="";run()};
-$("district").onchange=()=>{M.district=$("district").value;run()};
+const go=(explicit)=>{savedMode=false;explicitSearch=!!explicit;updSaved();return run()};
+$("askForm").onsubmit=e=>{e.preventDefault();go(true)};
+document.querySelectorAll(".ex button").forEach(b=>b.onclick=()=>{$("q").value=b.textContent;go(true)});
+let tm;$("q").addEventListener("input",()=>{clearTimeout(tm);tm=setTimeout(go,350)});
+$("state").onchange=()=>{M.state=$("state").value;M.district="";go()};
+$("district").onchange=()=>{M.district=$("district").value;go()};
 $("sort").onchange=()=>{if($("sort").value==="near"&&!me)locate().then(run);else run()};
 $("near").onclick=()=>locate().then(run);
 $("advBtn").onclick=()=>$("adv").classList.toggle("open");
@@ -638,13 +727,19 @@ $("fBeds").oninput=e=>{M.beds=+e.target.value||0;updFilterBtn();clearTimeout(tm)
 $("fScore").onchange=e=>{M.score=+e.target.value;updFilterBtn();run()};
 $("pills").onclick=e=>{const p=e.target.closest(".pill");if(!p)return;const k=p.dataset.k==="beds"?"hasBeds":p.dataset.k;M[k]=!M[k];setPills();updFilterBtn();run()};
 $("reset").onclick=()=>{resetAll();updFilterBtn()};
-$("landing").onclick=e=>{if(e.target.id==="clr"){resetAll();updFilterBtn();return}const t=e.target.closest(".tile");if(t){M.state=t.dataset.c;$("state").value=M.state;run();scrollTo({top:0,behavior:"smooth"})}};
-$("grid").onclick=e=>{const c=e.target.closest(".cp");if(c){copyOne(+c.dataset.i);return}if(e.target.id==="clr"){e.preventDefault();resetAll();updFilterBtn()}};
+$("landing").onclick=e=>{if(e.target.id==="clr"){resetAll();updFilterBtn();return}const q=e.target.closest("[data-q]");if(q){$("q").value=q.dataset.q;go(true);scrollTo({top:0,behavior:"smooth"});return}
+  const t=e.target.closest(".tile");if(t){M.state=t.dataset.c;$("state").value=M.state;go();scrollTo({top:0,behavior:"smooth"})}};
+$("grid").onclick=e=>{const c=e.target.closest(".cp");if(c){copyOne(+c.dataset.i);return}
+  const f=e.target.closest(".fav");if(f){const on=toggleSave(f.dataset.id);f.classList.toggle("on",on);f.classList.remove("pop");void f.offsetWidth;f.classList.add("pop");
+    if(savedMode&&!on){f.closest(".card").remove();VIEW=VIEW.filter(h=>h.id!==f.dataset.id);if(!VIEW.length)renderSaved()}return}if(e.target.id==="clr"){e.preventDefault();resetAll();updFilterBtn()}};
 $("vGrid").onclick=()=>{$("grid").classList.remove("list");$("vGrid").classList.add("on");$("vList").classList.remove("on")};
 $("vList").onclick=()=>{$("grid").classList.add("list");$("vList").classList.add("on");$("vGrid").classList.remove("on")};
 $("theme").onclick=()=>{const d=document.documentElement.dataset.theme==="dark"?"":"dark";document.documentElement.dataset.theme=d;$("theme").textContent=d?"☀️":"🌙";try{localStorage.setItem("theme",d)}catch{}};
 addEventListener("scroll",()=>{fillViewport();$("fab").hidden=scrollY<700},{passive:true});
 new IntersectionObserver(es=>{if(es[0].isIntersecting)fillViewport()},{rootMargin:"700px"}).observe($("sentinel"));
+$("savedBtn").onclick=()=>{savedMode=!savedMode;updSaved();run()};
+document.querySelector(".brand").onclick=()=>{resetAll();updFilterBtn();scrollTo({top:0,behavior:"smooth"})};
+(()=>{const b=$("bpm");setInterval(()=>{b.textContent=70+Math.round(Math.random()*6)},1800)})();
 $("fab").onclick=()=>scrollTo({top:0,behavior:"smooth"});
 // typewriter placeholder
 (()=>{const ex=["private heart hospital in Hyderabad with emergency","24x7 government hospital in Pune","eye hospital in Chennai","cancer hospitals Kerala with more than 100 beds","children hospital near me","dialysis centre in Jaipur"];
@@ -690,6 +785,7 @@ addEventListener("unhandledrejection",e=>{console.error(e.reason);if(!INDEX)show
 addEventListener("error",e=>{if(!INDEX)showError("bad",...SERVICE_DOWN)});
 try{const t=localStorage.getItem("theme");if(t){document.documentElement.dataset.theme=t;$("theme").textContent="☀️"}}catch{}
 $("fSpec").innerHTML+=SPECS.map(s=>`<option>${esc(s[0])}</option>`).join("");
+updSaved();
 boot();
 </script>
 </body>
