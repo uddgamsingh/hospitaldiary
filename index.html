@@ -57,6 +57,8 @@ select:focus,input:focus{border-color:var(--pri);outline:none;box-shadow:0 0 0 3
 .advgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
 .advgrid label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mut)}
 .advgrid select,.advgrid input{width:100%;max-width:none}
+.cov{margin-top:12px;padding:9px 12px;border-radius:10px;background:var(--soft);color:var(--pri);font-size:12.5px}.cov:empty{display:none}
+.u .x{border:0;background:rgba(0,0,0,.12);color:inherit;border-radius:50%;width:17px;height:17px;line-height:15px;font-size:10px;cursor:pointer;margin-left:4px;padding:0}.u .x:hover{background:#ef4444;color:#fff}
 .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .pill{padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-size:13px;user-select:none}
 .pill.on{background:var(--pri);border-color:var(--pri);color:#fff}
@@ -286,7 +288,7 @@ body{background:radial-gradient(900px 500px at 8% -5%,rgba(20,160,133,.10),trans
       <label>Ownership<select id="fKind"><option value="">Any</option><option value="gov">Government</option><option value="pvt">Private / Trust</option></select></label>
       <label>Speciality<select id="fSpec"><option value="">Any</option></select></label>
       <label>Minimum beds<input type="number" id="fBeds" min="0" step="10" placeholder="e.g. 100"></label>
-      <label>Info completeness<select id="fScore"><option value="0">Any</option><option value="40">40%+</option><option value="60">60%+</option><option value="80">80%+</option></select></label>
+      <label>Details listed<select id="fScore"><option value="0">Any</option><option value="3">3 or more</option><option value="5">5 or more</option><option value="7">7 or more</option></select></label>
     </div>
     <div class="pills" id="pills">
       <span class="pill" data-k="er">🚑 Emergency</span><span class="pill" data-k="h24">🕐 Open 24/7</span>
@@ -294,6 +296,7 @@ body{background:radial-gradient(900px 500px at 8% -5%,rgba(20,160,133,.10),trans
       <span class="pill" data-k="email">✉️ Has email</span><span class="pill" data-k="wheel">♿ Accessible</span>
       <span class="pill" data-k="beds">🛏 Bed count listed</span>
     </div>
+    <div class="cov" id="cov"></div>
     <div style="margin-top:12px"><button class="btn" id="reset">Reset all filters</button></div>
   </div>
 
@@ -402,12 +405,12 @@ function matches(h,C,specRes){
   if(C.state&&h.state!==C.state) return false;
   if(C.dist.length&&!C.dist.includes(h.dist)) return false;
   if(C.kind&&h.kind!==C.kind) return false;
-  if(C.er&&h.er!=="yes") return false;
+  if(C.er&&!h.erx) return false;
   if(C.h24&&!/24\s*\/\s*7/.test(h.hours||"")) return false;
   if(C.phone&&!h.phone) return false; if(C.web&&!h.web) return false; if(C.email&&!h.email) return false;
   if(C.wheel&&h.wheel!=="yes") return false;
   if(C.hasBeds&&!h.beds) return false; if(C.beds&&!(h.beds>=C.beds)) return false;
-  if(C.score&&h.score<C.score) return false;
+  if(C.score&&(h.nf||0)<C.score) return false;
   if(specRes.length&&!specRes.some(re=>re.test(h.blob))) return false;
   for(const w of C.text) if(!h.blob.includes(w)) return false;
   return true;
@@ -418,12 +421,18 @@ function relevance(h,C){ let s=0; const n=h.name.toLowerCase(); for(const w of C
 /* ============ State ============ */
 let INDEX=null, STATES=[], LOADED={}, ALL=[], PLACES=[], VOCAB=new Map(), VIEW=[], shown=0;
 let M={state:"",district:"",kind:"",spec:"",beds:0,score:0,er:false,h24:false,phone:false,web:false,email:false,wheel:false,hasBeds:false};
-let me=null, token=0, lastP=null, partial=0, usedCache=0, staleIdx=false, savedMode=false, explicitSearch=false;
+let covText="", me=null, token=0, lastP=null, partial=0, usedCache=0, staleIdx=false, savedMode=false, explicitSearch=false;
 
+const GOV_RE=/\b(govt?|government|district hospital|civil hospital|area hospital|general hospital|phc|chc|esi|esic|aiims|municipal|railway|primary health|community health)\b/i;
+const PVT_RE=/\b(private|pvt|ltd|limited|trust|nursing home|mission|charit\w*|foundation|corporate)\b/i;
 function decorate(h,code,name){
   h.state=code; h.stateName=name; h.dist=h.dist||"";
+  if(!h.kind){ const t=h.name+" "+(h.op||""); h.kind=GOV_RE.test(t)?"gov":PVT_RE.test(t)?"pvt":"" }   // guess ownership from the name when the map doesn't say
+  h.beds=Number(h.beds)||"";
+  h.erx=h.er==="yes"||/\b(emergency|trauma|casualty|24\s*x\s*7)\b/i.test(h.name);
   const f=[h.addr,h.phone,h.web,h.hours,h.email,h.beds,h.spec,h.op,h.dist];
-  h.score=Math.round(100*f.filter(Boolean).length/f.length);
+  h.nf=f.filter(Boolean).length;                       // how many details are listed (0-9)
+  h.score=Math.round(100*h.nf/f.length);
   h.blob=`${h.name} ${h.te||""} ${h.addr||""} ${h.dist} ${name} ${h.spec||""} ${h.op||""}`.toLowerCase();
   return h;
 }
@@ -511,6 +520,7 @@ async function runInner(updateUrl=true){
   fillDistricts(C.state);
   if(P.near&&$("sort").value!=="near"){ $("sort").value="near"; }
   if($("sort").value==="near"&&!me){ await locate(true); if(my!==token) return; }
+  updateCoverage(C);
   const specRes=C.specs.map(l=>SPECS.find(s=>s[0]===l)[1]);
   VIEW=ALL.filter(h=>matches(h,C,specRes));
   const s=P.sort&&$("sort").value==="rel"?P.sort:$("sort").value;
@@ -539,14 +549,29 @@ function renderUnderstood(P,C){
   const chips=[]; const sn=C.state&&STATES.find(s=>s.code===C.state);
   if(sn) chips.push(["g","State: "+sn.name]);
   if(C.dist.length) chips.push(["g","District: "+C.dist.join(" / ")]);
-  if(C.kind) chips.push(["a",C.kind==="gov"?"Government":"Private / Trust"]);
-  C.specs.forEach(s=>chips.push(["",s]));
-  if(C.er)chips.push(["","Emergency"]); if(C.h24)chips.push(["","24/7"]); if(C.phone)chips.push(["","Has phone"]);
-  if(C.web)chips.push(["","Has website"]); if(C.email)chips.push(["","Has email"]); if(C.wheel)chips.push(["","Accessible"]);
-  if(C.beds)chips.push(["",C.beds+"+ beds"]); if(C.score)chips.push(["",C.score+"%+ complete"]);
+  if(C.kind) chips.push(["a",C.kind==="gov"?"Government":"Private / Trust",M.kind&&!P.kind?"kind":""]);
+  C.specs.forEach(sp=>chips.push(["",sp,sp===M.spec&&!P.specs.includes(sp)?"spec":""]));
+  if(C.er)chips.push(["","Emergency",M.er&&!P.er?"er":""]); if(C.h24)chips.push(["","24/7",M.h24&&!P.h24?"h24":""]);
+  if(C.phone)chips.push(["","Has phone",M.phone&&!P.phone?"phone":""]); if(C.web)chips.push(["","Has website",M.web&&!P.web?"web":""]);
+  if(C.email)chips.push(["","Has email",M.email&&!P.email?"email":""]); if(C.wheel)chips.push(["","Accessible",M.wheel&&!P.wheel?"wheel":""]);
+  if(C.hasBeds)chips.push(["","Bed count listed","hasBeds"]);
+  if(C.beds)chips.push(["",C.beds+"+ beds",M.beds&&M.beds>=P.beds?"beds":""]);
+  if(C.score)chips.push(["",C.score+"+ details listed",M.score&&M.score>=C.score?"score":""]);
   C.text.forEach(t=>chips.push(["a",`“${t}”`])); if(P.near) chips.push(["","Nearest first"]);
   P.fixed.forEach(([a,b])=>chips.push(["a",`✏️ ${a} → ${b}`]));
-  $("understood").innerHTML=chips.length?'<span>Understood as:</span>'+chips.map(([c,t])=>`<span class="u ${c}">${esc(t)}</span>`).join(""):"";
+  $("understood").innerHTML=chips.length?'<span>Understood as:</span>'+chips.map(([c,t,rm])=>`<span class="u ${c}">${esc(t)}${rm?` <button class="x" data-rm="${rm}" title="Remove this filter">✕</button>`:""}</span>`).join(""):"";
+}
+function removeFilter(k){
+  const z={kind:"",spec:"",beds:0,score:0};
+  M[k]=k in z?z[k]:false;
+  $("fKind").value=M.kind; $("fSpec").value=M.spec; $("fBeds").value=M.beds||""; $("fScore").value=String(M.score||0);
+  setPills(); updFilterBtn(); run();
+}
+function updateCoverage(C){
+  const sub=ALL.filter(h=>(!C.state||h.state===C.state)&&(!C.dist.length||C.dist.includes(h.dist)));
+  const n=sub.length, pc=f=>n?Math.round(100*sub.filter(f).length/n)+"%":"–";
+  covText=`In this selection (${n.toLocaleString()} hospitals): ownership known ${pc(h=>h.kind)} · bed count ${pc(h=>h.beds)} · phone ${pc(h=>h.phone)} · website ${pc(h=>h.web)} · emergency ${pc(h=>h.erx)}`;
+  $("cov").textContent=covText;
 }
 function hl(text,C){
   const s=esc(text); const w=(C.text||[]).filter(x=>x.length>1).map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
@@ -560,7 +585,7 @@ function card(h,C,i){
   return `<article class="card ${h.kind?"k-"+h.kind:""}" style="--d:${(i%12)*45}ms"><div class="chd"><div class="av ${h.kind}">${ini}</div><div><h3>${hl(h.name,C)}</h3>
     <div class="loc">📍 ${esc([h.dist,h.stateName].filter(Boolean).join(", "))}</div></div><button class="fav ${getSaved()[h.id]?"on":""}" data-id="${esc(h.id)}" title="Save this hospital" aria-label="Save">♥</button></div>${h.te?`<div class="te">${esc(h.te)}</div>`:""}
     <div class="tags">${h.kind==="gov"?'<span class="tag blue">Government</span>':h.kind==="pvt"?'<span class="tag amber">Private / Trust</span>':""}
-      ${h.er==="yes"?'<span class="tag red">Emergency</span>':""}${/24\s*\/\s*7/.test(h.hours||"")?'<span class="tag">24/7</span>':""}
+      ${h.erx?'<span class="tag red">Emergency</span>':""}${/24\s*\/\s*7/.test(h.hours||"")?'<span class="tag">24/7</span>':""}
       ${h.beds?`<span class="tag">${h.beds} beds</span>`:""}${h.wheel==="yes"?'<span class="tag">♿ Accessible</span>':""}</div>
     <div class="info">${row("📍",h.addr)}${row("📞",h.phone,tel)}${row("✉️",h.email,h.email?"mailto:"+h.email:"")}${row("🌐",h.web,web)}${row("🕐",h.hours)}
       ${h.spec?row("🩺",h.spec):""}${h.op?row("🏢",h.op):""}</div>
@@ -583,7 +608,7 @@ function animateCounts(){
 }
 function renderStats(){
   const n=f=>VIEW.filter(f).length;
-  $("stats").innerHTML=[[IC.all,"Matching hospitals",VIEW.length],[IC.phone,"With phone",n(h=>h.phone)],[IC.web,"With website",n(h=>h.web)],[IC.er,"Emergency",n(h=>h.er==="yes")],[IC.dist,"Districts",new Set(VIEW.map(h=>h.dist).filter(Boolean)).size]]
+  $("stats").innerHTML=[[IC.all,"Matching hospitals",VIEW.length],[IC.phone,"With phone",n(h=>h.phone)],[IC.web,"With website",n(h=>h.web)],[IC.er,"Emergency",n(h=>h.erx)],[IC.dist,"Districts",new Set(VIEW.map(h=>h.dist).filter(Boolean)).size]]
     .map(([i,k,v])=>statHtml(i,k,v,true)).join(""); animateCounts();
 }
 function renderMore(C){
@@ -602,7 +627,7 @@ function fillViewport(){   // keeps loading until the page is full, then waits f
 function renderNoMatch(){
   $("sentinel").hidden=true;$("endmsg").hidden=true;$("count").textContent="0 matching";
   $("grid").innerHTML=`<div class="panel" style="grid-column:1/-1"><div class="big">🔎</div><h3>No hospitals found</h3>
-    <p>Nothing matches your search and filters. Try fewer words, a different spelling, or remove a filter.</p>
+    <p>Nothing matches your search and filters. Try fewer words, a different spelling, or remove a filter.</p>${covText?`<p style="font-size:12.5px">${esc(covText)}.<br>Many hospitals don't list details like beds or ownership on the map, so those filters can hide real hospitals.</p>`:""}
     <div class="acts"><button class="btn pri" id="clr">Clear all filters</button></div></div>`;
   statusLine();
 }
@@ -737,6 +762,7 @@ $("vList").onclick=()=>{$("grid").classList.add("list");$("vList").classList.add
 $("theme").onclick=()=>{const d=document.documentElement.dataset.theme==="dark"?"":"dark";document.documentElement.dataset.theme=d;$("theme").textContent=d?"☀️":"🌙";try{localStorage.setItem("theme",d)}catch{}};
 addEventListener("scroll",()=>{fillViewport();$("fab").hidden=scrollY<700},{passive:true});
 new IntersectionObserver(es=>{if(es[0].isIntersecting)fillViewport()},{rootMargin:"700px"}).observe($("sentinel"));
+$("understood").onclick=e=>{const x=e.target.closest(".x");if(x)removeFilter(x.dataset.rm)};
 $("savedBtn").onclick=()=>{savedMode=!savedMode;updSaved();run()};
 document.querySelector(".brand").onclick=()=>{resetAll();updFilterBtn();scrollTo({top:0,behavior:"smooth"})};
 (()=>{const b=$("bpm");setInterval(()=>{b.textContent=70+Math.round(Math.random()*6)},1800)})();
