@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hospital Directory by Uddgam – India</title>
 <meta name="robots" content="noarchive,noimageindex">
-<meta name="description" content="Search hospitals across every state and district of India in plain language. Daily-updated open data.">
+<meta name="description" content="Search hospitals across every state and district of India in plain language. Regularly updated open data.">
 <style>
 :root{
   --bg:#f5f7fb;--surface:#fff;--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;
@@ -543,7 +543,7 @@ function status(msg,busy,bad){$("status").innerHTML=`<span class="dot ${busy||ba
 function statusLine(){
   if(!INDEX) return;
   const f=d=>new Date(d).toLocaleString([], {dateStyle:"medium",timeStyle:"short"});
-  $("status").innerHTML=`<span class="dot"></span><span>Data updated <b>${f(INDEX.fetched_at)}</b>${INDEX.checked_at?` · last checked ${f(INDEX.checked_at)}`:""} · checked daily</span>`;
+  $("status").innerHTML=`<span class="dot"></span><span>Data updated <b>${f(INDEX.fetched_at)}</b>${INDEX.checked_at?` · last checked ${f(INDEX.checked_at)}`:""} · checked every 15 days</span>`;
 }
 function renderUnderstood(P,C){
   const chips=[]; const sn=C.state&&STATES.find(s=>s.code===C.state);
@@ -636,7 +636,7 @@ function renderUnavailable(name,scope){
   fillDistricts(M.state||"");
   $("landing").innerHTML=`<div class="panel"><div class="big">📭</div><span class="badge">Data unavailable</span>
     <h3>No hospital data for ${esc(name)}</h3>
-    <p>We don't have hospital records for this ${scope||"state"} right now. It may be missing from the open map data, or it hasn't been collected yet. Please try again after some time — it is checked every day.</p>
+    <p>We don't have hospital records for this ${scope||"state"} right now. It may be missing from the open map data, or it hasn't been collected yet. Please try again after some time — it is checked every 15 days.</p>
     <div class="acts"><button class="btn pri" id="clr">Browse other states</button></div></div>`;
   statusLine();
 }
@@ -800,7 +800,7 @@ async function boot(){
   if(M.district&&$("district").querySelector(`option[value="${CSS.escape(M.district)}"]`)) $("district").value=M.district;
   if(!booted){
     booted=true;
-    // daily scheduler tick: re-check the index while the page stays open
+    // scheduler tick: re-check the index while the page stays open
     setInterval(async()=>{try{const j=await (await fetchT("data/index.json",{cache:"no-store"},1)).json();
       if(INDEX&&j.fetched_at!==INDEX.fetched_at){INDEX=j;STATES=j.states;LOADED={};ALL=[];await run(false)}}catch{}},30*60*1000);
   }
