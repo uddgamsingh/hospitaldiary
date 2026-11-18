@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hospital Directory by Uddgam - daily data job (all India).
+"""Hospital Directory by Uddgam - scheduled data job (all India).
 
 Pulls every hospital for each Indian state / UT from OpenStreetMap through the
 free Overpass API (no key) and writes:
@@ -14,8 +14,8 @@ returns far fewer hospitals than before, the saved data is kept untouched.
 Run:      python3 fetch_hospitals.py            (all states)
           python3 fetch_hospitals.py TG KA      (only some states)
           python3 fetch_hospitals.py --out site/data
-Daily:    use the included GitHub Actions workflow, or cron:
-          0 2 * * * cd /path/to/folder && python3 fetch_hospitals.py
+Schedule: use the included GitHub Actions workflow (1st & 16th), or cron:
+          30 1 1,16 * * cd /path/to/folder && python3 fetch_hospitals.py
 """
 import hashlib, json, os, re, shutil, sys, time, urllib.parse, urllib.request, zlib
 from datetime import datetime, timezone
