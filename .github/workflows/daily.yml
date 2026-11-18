@@ -1,6 +1,9 @@
-name: Daily hospital refresh & deploy
+name: Hospital data refresh & deploy
 on:
-  schedule: [{cron: "0 10 * * *"}]   # 15:30 IST every day (GitHub uses UTC)
+  schedule: [{cron: "0 20 1,16 * *"}]   # 1st and 16th of each month, ~1:30 AM IST (GitHub uses UTC)
+  push:                               # design change = quick redeploy using the saved data (no re-fetch)
+    branches: [main]
+    paths: [index.html, robots.txt]
   workflow_dispatch:
     inputs:
       states:
@@ -23,9 +26,10 @@ jobs:
         with: {ref: data, path: store}
 
       - name: Fetch, compare and update (keeps old data if anything fails)
+        if: github.event_name != 'push'
         run: |
           mkdir -p store/data
-          timeout 290m python3 fetch_hospitals.py --out store/data ${{ github.event.inputs.states }} || echo "Fetch step ended with code $? - continuing with saved data"
+          timeout 300m python3 fetch_hospitals.py --out store/data ${{ github.event.inputs.states }} || echo "Fetch step ended with code $? - continuing with saved data"
           cat store/data/run_report.md >> "$GITHUB_STEP_SUMMARY" || true
 
       - name: Check there is data to publish
@@ -34,6 +38,7 @@ jobs:
           python3 -c "import json,sys; sys.exit(0 if json.load(open('store/data/index.json'))['total']>0 else 1)"
 
       - name: Save data to the 'data' branch (backup)
+        if: github.event_name != 'push'
         run: |
           cd store
           rm -rf .git
